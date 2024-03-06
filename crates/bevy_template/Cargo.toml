@@ -1,0 +1,16 @@
+[package]
+name = "bevy_template"
+version = "0.1.0"
+edition = "2021"
+publish = ["rsproxy-sparse"]
+
+[dependencies]
+bevy = "0.13"
+thiserror = "1"
+serde = "1"
+ron = "0.8.1"
+indexmap = "2.2.5"
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"

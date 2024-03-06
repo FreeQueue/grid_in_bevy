@@ -1,0 +1,10 @@
+(
+    inherit:"testd",
+    infos:{
+
+    },
+    components:{
+        Template:(),
+        Visiblity:(),
+    }
+)
