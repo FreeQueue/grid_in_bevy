@@ -1,67 +1,59 @@
-use crate::content::TemplateContentDeserializer;
 use crate::info::Infos;
-use bevy::asset::io::Reader;
-use bevy::asset::{Asset, AssetLoader, AsyncReadExt, BoxedFuture, LoadContext};
-use bevy::ecs::component::ComponentId;
-use bevy::prelude::{AppTypeRegistry, FromWorld, Reflect, TypePath, World};
-use bevy::reflect::TypeRegistryArc;
-use thiserror::Error;
+use bevy::ecs::component::{ComponentId, Components};
+use bevy::prelude::*;
+use bevy::utils::TypeIdMap;
+use either::Either;
+use std::any::Any;
+use std::mem;
+use std::sync::Arc;
+
+pub(crate) enum TemplateComponents {
+    Init {
+        component_ids: Vec<ComponentId>,
+        components: Vec<Arc<dyn Reflect>>,
+    },
+    Uninit {
+        components: TypeIdMap<Arc<dyn Reflect>>,
+    },
+}
+
+impl TemplateComponents {
+    pub fn iter(&self) -> impl Iterator<Item = &Arc<dyn Reflect>> {
+        match self {
+            TemplateComponents::Init { components, .. } => Either::Left(components.iter()),
+            TemplateComponents::Uninit { components } => Either::Right(components.values()),
+        }
+    }
+}
 
 #[derive(Asset, TypePath)]
 pub struct Template {
-    pub name: String,
-    pub(crate) component_ids: Vec<ComponentId>,
-    pub(crate) components: Vec<Box<dyn Reflect>>,
+    pub(crate) components: TemplateComponents,
     pub infos: Infos,
 }
 
-pub struct TemplateLoader {
-    type_registry: TypeRegistryArc,
-}
-
-#[derive(Debug, Error)]
-pub enum TemplateLoaderError {
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-    #[error(transparent)]
-    RonSpannedError(#[from] ron::error::SpannedError),
-}
-
-impl FromWorld for TemplateLoader {
-    fn from_world(world: &mut World) -> Self {
-        let type_registry = world.resource::<AppTypeRegistry>().0.clone();
-        Self { type_registry }
+impl Template {
+    pub fn is_initialized(&self) -> bool {
+        matches!(self.components, TemplateComponents::Init { .. })
     }
-}
 
-impl AssetLoader for TemplateLoader {
-    type Asset = Template;
-    type Settings = ();
-    type Error = TemplateLoaderError;
-
-    fn load<'a>(
-        &'a self,
-        reader: &'a mut Reader,
-        _settings: &'a Self::Settings,
-        _load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
-        Box::pin(async move {
-            let mut content = String::new();
-            reader.read_to_string(&mut content).await?;
-            let type_registry = self.type_registry.read();
-            let template_deserializer = TemplateContentDeserializer {
-                registry: &type_registry,
+    pub(crate) fn initialize(&mut self, self_handle: Handle<Template>, components: &Components) {
+        if let TemplateComponents::Uninit {
+            components: ref mut component_map,
+        } = self.components
+        {
+            let mut component_map = mem::take(component_map);
+            let get_component_id = |component: &Arc<dyn Reflect>| -> ComponentId {
+                components.get_id(component.type_id()).unwrap()
             };
-            drop(type_registry);
-            // let template = template_deserializer
-            //     .deserialize(&mut deserializer)
-            //     .map_err(|e| deserializer.span_error(e))?;
-            // Ok(template)
-            todo!()
-        })
-    }
-
-    fn extensions(&self) -> &[&str] {
-        &["temp"]
+            //只会保留这个Handle<Template>的组件
+            component_map.insert(self_handle.type_id(), self_handle.clone_value().into());
+            let mut components: Vec<Arc<dyn Reflect>> = component_map.into_values().collect();
+            components.sort_by_cached_key(get_component_id);
+            self.components = TemplateComponents::Init {
+                component_ids: components.iter().map(get_component_id).collect(),
+                components,
+            }
+        }
     }
 }

@@ -1087,6 +1087,7 @@ name = "bevy_template"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "either",
  "indexmap",
  "ron",
  "serde",
@@ -2471,6 +2472,7 @@ checksum = "7b0b929d511467233429c45a44ac1dcaa21ba0f5ba11e4879e6ed28ddb4f9df4"
 dependencies = [
  "equivalent",
  "hashbrown",
+ "serde",
 ]
 
 [[package]]
@@ -3539,6 +3541,7 @@ checksum = "b91f7eff05f748767f183df4320a63d6936e9c6107d97c9e6bdd9784f4289c94"
 dependencies = [
  "base64",
  "bitflags 2.4.2",
+ "indexmap",
  "serde",
  "serde_derive",
 ]

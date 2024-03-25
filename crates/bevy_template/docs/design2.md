@@ -4,14 +4,14 @@
 
 ## 资产示例
 
-文件：`template.ron`,`base.ron`
+文件：`template.RON`,`base.RON`
 
 ### V1
 
-```ron
+```RON
 // 一个简单的模板
 [
-    ("base.ron"), //Template，相当于继承
+    ("base.RON"), //Template，相当于继承
     Visiblity(visible:false), //Componet
     SpriteBundle(
         texture:("sprite1.png")//Handle<Image>
@@ -23,9 +23,9 @@
 
 ### V2
 
-```ron
+```RON
 (
-    dep:["base.ron"],
+    dep:["base.RON"],
     content:{
         Bundle:(
             comp1:("data1"),
@@ -36,7 +36,7 @@
 )
 ```
 
-##    
+##     
 
 ## 清单
 

@@ -1,0 +1,7 @@
+(
+    // dep:["base.RON"],
+    content:{
+        TestInfo:{value:1},
+        TestTrait:{value:5},
+    }
+)

@@ -16,7 +16,7 @@ noise = "0.8"
 #native-dialog = "0.7"
 #sysinfo = "0.30.5"
 #memory-stats = "1.1.0"
-ron = "0.8.1"
+ron = { version = "0.8.1", features = ["indexmap"] }
 log = "0.4.21"
 env_logger = "0.11.2"
 chrono = "0.4.34"

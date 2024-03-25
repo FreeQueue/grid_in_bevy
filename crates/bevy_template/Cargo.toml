@@ -5,11 +5,12 @@ edition = "2021"
 publish = ["rsproxy-sparse"]
 
 [dependencies]
-bevy = "0.13"
+bevy = { version = "0.13", features = ["dynamic_linking"] }
 thiserror = "1"
 serde = "1"
-ron = "0.8.1"
+ron = { version = "0.8.1", features = ["indexmap"] }
 indexmap = "2.2.5"
+either = "1.10.0"
 
 [[example]]
 name = "basic"

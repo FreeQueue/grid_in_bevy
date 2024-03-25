@@ -1,68 +1,45 @@
 use bevy::prelude::*;
 use bevy::utils::TypeIdMap;
 use std::any::TypeId;
+use std::sync::Arc;
 
-pub trait Info: Reflect {
-    type Trait: Trait<Info = Self>;
+#[reflect_trait]
+pub trait InfoAny: Reflect {
+    fn gen_reflect(&self) -> Box<dyn Reflect>;
+}
 
-    fn init(&self) -> Self::Trait;
+pub trait Info: InfoAny {
+    type Component: InfoComponent<Info = Self>;
 
-    fn init_reflect(&self) -> Box<dyn Reflect> {
-        Box::new(self.init())
+    fn gen(&self) -> Self::Component;
+}
+
+impl<T: Info> InfoAny for T {
+    fn gen_reflect(&self) -> Box<dyn Reflect> {
+        Box::new(self.gen())
     }
 }
 
-pub trait Trait: Component + Reflect {
-    type Info: Info<Trait = Self>;
+pub trait InfoComponent: Component + Reflect {
+    type Info: Info<Component = Self>;
 }
 
-#[derive(Asset, TypePath)]
 pub struct Infos {
-    infos: TypeIdMap<Box<dyn Reflect>>,
+    pub(crate) infos: TypeIdMap<Arc<dyn InfoAny>>,
 }
 
 impl Infos {
-    pub fn get<T: Trait>(&self) -> Option<&T::Info> {
-        let info = self.infos.get(&TypeId::of::<T>()).unwrap();
-        info.downcast_ref()
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use crate::info::{Info, Trait};
-    use bevy::prelude::*;
-
-    #[derive(Reflect)]
-    struct TestInfo {
-        value: i32,
+    #[allow(dead_code)]
+    pub fn get<T: InfoComponent>(&self) -> Option<&T::Info> {
+        self.infos.get(&TypeId::of::<T>()).map(|info| {
+            info.as_ref()
+                .as_reflect()
+                .downcast_ref::<T::Info>()
+                .expect("Failed to downcast info to component info")
+        })
     }
 
-    impl Info for TestInfo {
-        type Trait = TestTrait;
-
-        fn init(&self) -> Self::Trait {
-            TestTrait { value: self.value }
-        }
+    pub fn get_reflect(&self, type_id: TypeId) -> Option<&dyn InfoAny> {
+        self.infos.get(&type_id).map(|info| info.as_ref())
     }
-
-    #[derive(Component, Reflect)]
-    struct TestTrait {
-        value: i32,
-    }
-
-    impl Trait for TestTrait {
-        type Info = TestInfo;
-    }
-
-    fn test() {
-        App::new()
-            .add_plugins(MinimalPlugins)
-            .register_type::<TestInfo>()
-            .register_type::<TestTrait>()
-            .add_systems(Startup, test)
-            .run();
-    }
-
-    fn setup(type_registry: Res<AppTypeRegistry>) {}
 }
