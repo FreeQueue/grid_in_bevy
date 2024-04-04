@@ -3,10 +3,10 @@ use bevy::ecs::component::{ComponentId, Components};
 use bevy::prelude::*;
 use bevy::utils::TypeIdMap;
 use either::Either;
-use std::any::Any;
 use std::mem;
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub(crate) enum TemplateComponents {
     Init {
         component_ids: Vec<ComponentId>,
@@ -22,11 +22,11 @@ impl TemplateComponents {
         match self {
             TemplateComponents::Init { components, .. } => Either::Left(components.iter()),
             TemplateComponents::Uninit { components } => Either::Right(components.values()),
-        }
+        } //.map(|info| {info.as_ref()})
     }
 }
 
-#[derive(Asset, TypePath)]
+#[derive(Asset, TypePath, Debug)]
 pub struct Template {
     pub(crate) components: TemplateComponents,
     pub infos: Infos,
@@ -37,22 +37,23 @@ impl Template {
         matches!(self.components, TemplateComponents::Init { .. })
     }
 
-    pub(crate) fn initialize(&mut self, self_handle: Handle<Template>, components: &Components) {
+    pub(crate) fn initialize(&mut self, components: &Components) {
         if let TemplateComponents::Uninit {
             components: ref mut component_map,
         } = self.components
         {
-            let mut component_map = mem::take(component_map);
-            let get_component_id = |component: &Arc<dyn Reflect>| -> ComponentId {
-                components.get_id(component.type_id()).unwrap()
-            };
-            //只会保留这个Handle<Template>的组件
-            component_map.insert(self_handle.type_id(), self_handle.clone_value().into());
-            let mut components: Vec<Arc<dyn Reflect>> = component_map.into_values().collect();
-            components.sort_by_cached_key(get_component_id);
+            let component_map = mem::take(component_map);
+            let mut component_map: Vec<_> = component_map
+                .into_iter()
+                .map(|(id, component)| (components.get_id(id).unwrap(), component))
+                .collect();
+            component_map.sort_by_key(|(id, _)| *id);
             self.components = TemplateComponents::Init {
-                component_ids: components.iter().map(get_component_id).collect(),
-                components,
+                component_ids: component_map.iter().map(|(id, _)| *id).collect(),
+                components: component_map
+                    .into_iter()
+                    .map(|(_, component)| component)
+                    .collect(),
             }
         }
     }

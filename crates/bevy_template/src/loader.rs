@@ -1,15 +1,15 @@
-use crate::info::{InfoAny, Infos, ReflectInfoAny};
-use crate::prelude::Template;
-use crate::ron::TemplateRon;
-use crate::template::TemplateComponents;
 use bevy::asset::io::Reader;
 use bevy::asset::{AssetLoader, AsyncReadExt, BoxedFuture, LoadContext};
-use bevy::prelude::{AppTypeRegistry, FromWorld, Reflect, World};
+use bevy::prelude::{AppTypeRegistry, FromWorld, World};
 use bevy::reflect::TypeRegistryArc;
 use bevy::utils::TypeIdMap;
 use ron::de::SpannedError;
-use std::sync::Arc;
 use thiserror::Error;
+
+use crate::info::Infos;
+use crate::prelude::Template;
+use crate::ron::TemplateRon;
+use crate::template::TemplateComponents;
 
 pub struct TemplateLoader {
     pub type_registry: TypeRegistryArc,
@@ -19,6 +19,8 @@ pub struct TemplateLoader {
 pub enum TemplateLoaderError {
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    #[error(transparent)]
+    RonError(#[from] ron::Error),
     #[error(transparent)]
     RonSpannedError(#[from] SpannedError),
     #[error(transparent)]
@@ -50,15 +52,11 @@ impl AssetLoader for TemplateLoader {
             let mut components = TypeIdMap::default();
             let mut infos = TypeIdMap::default();
 
-            read_lock(
-                self.type_registry.clone(),
-                &ron,
-                &mut components,
-                &mut infos,
-            )?;
+            let (dep, content) = ron.load_content(self.type_registry.clone())?;
+            content.parse(self.type_registry.clone(), &mut components, &mut infos);
 
             //反向迭代去重，后覆盖前
-            for dep in ron.dep.iter().rev() {
+            for dep in dep.iter().rev() {
                 let loaded = load_context.load_direct(dep).await?;
                 let template = loaded.get::<Template>().unwrap();
                 for component in template.components.iter() {
@@ -79,36 +77,4 @@ impl AssetLoader for TemplateLoader {
     fn extensions(&self) -> &[&str] {
         &["temp.ron"]
     }
-}
-
-fn read_lock(
-    type_registry: TypeRegistryArc,
-    ron: &TemplateRon,
-    components: &mut TypeIdMap<Arc<dyn Reflect>>,
-    infos: &mut TypeIdMap<Arc<dyn InfoAny>>,
-) -> Result<(), SpannedError> {
-    let type_registry = type_registry.read();
-    let content = ron.load_content(&type_registry)?;
-
-    //反向迭代去重，后覆盖前
-    for item in content.items.into_iter().rev() {
-        let type_id = item.type_id();
-        //如果component已有，无需检测info，没有component必然没有info
-        if components.contains_key(&type_id) {
-            continue;
-        }
-        if let Some(reflect) = type_registry.get_type_data::<ReflectInfoAny>(type_id) {
-            let info = reflect.get_boxed(item).unwrap();
-            let component = info.gen_reflect();
-            if components
-                .try_insert(component.type_id(), component.into())
-                .is_ok()
-            {
-                infos.insert(type_id, info.into());
-            }
-        } else {
-            components.insert(type_id, item.into());
-        };
-    }
-    Ok(())
 }

@@ -1,7 +1,7 @@
 (
     // dep:["base.RON"],
     content:{
-        TestInfo:{value:1},
-        TestTrait:{value:5},
+        "basic::TestTrait":(value:5),
+        "basic::TestInfo":(value:1),
     }
 )

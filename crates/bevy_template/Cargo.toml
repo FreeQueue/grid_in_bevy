@@ -11,6 +11,7 @@ serde = "1"
 ron = { version = "0.8.1", features = ["indexmap"] }
 indexmap = "2.2.5"
 either = "1.10.0"
+log = "0.4.21"
 
 [[example]]
 name = "basic"

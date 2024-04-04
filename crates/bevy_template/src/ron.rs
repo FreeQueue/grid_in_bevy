@@ -1,29 +1,36 @@
-use crate::content::{TemplateContent, TemplateContentDeserializer};
-use bevy::reflect::TypeRegistry;
-use ron::de::SpannedError;
+use bevy::reflect::TypeRegistryArc;
 use serde::de::DeserializeSeed;
 use serde::Deserialize;
 
-#[derive(Deserialize, Debug)]
+use crate::content::{TemplateContent, TemplateContentDeserializer};
+
+#[derive(Debug, Deserialize)]
 pub struct TemplateRon {
     #[serde(default)]
     pub dep: Vec<String>,
-    pub content: String,
+    pub content: ron::Value,
 }
 
 impl TemplateRon {
     pub fn load_content(
-        &self,
-        type_registry: &TypeRegistry,
-    ) -> Result<TemplateContent, SpannedError> {
+        self,
+        type_registry: TypeRegistryArc,
+    ) -> Result<(Vec<String>, TemplateContent), ron::Error> {
+        let type_registry = type_registry.read();
+        // let content = if let Some(map) = self.content {
+        //     let content_deserializer = TemplateContentDeserializer {
+        //         registry: &type_registry,
+        //     };
+        //     content_deserializer.deserialize(map)?
+        // } else {
+        //     TemplateContent::default()
+        // };
         let content_deserializer = TemplateContentDeserializer {
-            registry: type_registry,
+            registry: &type_registry,
         };
-        let mut deserializer = ron::de::Deserializer::from_str(&self.content)?;
-        let content = content_deserializer
-            .deserialize(&mut deserializer)
-            .map_err(move |e| deserializer.span_error(e))?;
-        Ok(content)
+        let content = content_deserializer.deserialize(self.content)?;
+
+        Ok((self.dep, content))
     }
 }
 

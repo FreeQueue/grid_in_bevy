@@ -9,7 +9,7 @@ members = ["crates/bevy_template"]
 
 [dependencies]
 rand = { version = "0.8", features = ["small_rng"] }
-noise = "0.8"
+noise = "0.9.0"
 #thread_local = "1.1"
 #once_cell = "1.19"
 #futures-lite = "2.0.1"  # async poll task
@@ -18,8 +18,8 @@ noise = "0.8"
 #memory-stats = "1.1.0"
 ron = { version = "0.8.1", features = ["indexmap"] }
 log = "0.4.21"
-env_logger = "0.11.2"
-chrono = "0.4.34"
+env_logger = "0.11.3"
+chrono = "0.4.35"
 thiserror = "1"
 serde = { version = "1", features = ["derive"] }
 
@@ -28,12 +28,12 @@ leafwing-input-manager = "0.13.3"
 #bevy_console = "0.10.0"
 
 # UI
-bevy_egui = "0.25.0"
+bevy_egui = "0.26.0"
 #bevy-inspector-egui = "0.22"
 bevy_editor_pls = "0.8.0"
 
 [dependencies.bevy]
-version = "0.13.0"
+version = "0.13.1"
 features = ["dynamic_linking"]
 
 # Enable a small amount of optimization in debug mode
