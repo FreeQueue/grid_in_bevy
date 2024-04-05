@@ -1,15 +1,17 @@
 [package]
-name = "simple_world"
+name = "gridia"
 version = "0.1.0"
 edition = "2021"
 
 [workspace]
 resolver = "2" # Important! wgpu/bevy needs this!
-members = ["crates/bevy_template"]
+members = ["crates/gridia_datapack", "crates/gridia_template"]
+exclude = ["bevy"]
 
 [dependencies]
 rand = { version = "0.8", features = ["small_rng"] }
 noise = "0.9.0"
+either = "1.10.0"
 #thread_local = "1.1"
 #once_cell = "1.19"
 #futures-lite = "2.0.1"  # async poll task
@@ -19,7 +21,7 @@ noise = "0.9.0"
 ron = { version = "0.8.1", features = ["indexmap"] }
 log = "0.4.21"
 env_logger = "0.11.3"
-chrono = "0.4.35"
+chrono = "0.4.37"
 thiserror = "1"
 serde = { version = "1", features = ["derive"] }
 
@@ -33,7 +35,7 @@ bevy_egui = "0.26.0"
 bevy_editor_pls = "0.8.0"
 
 [dependencies.bevy]
-version = "0.13.1"
+path = "bevy"
 features = ["dynamic_linking"]
 
 # Enable a small amount of optimization in debug mode

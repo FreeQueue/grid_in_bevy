@@ -1,6 +1,33 @@
 use bevy::prelude::*;
-use bevy_template::prelude::*;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+
+use gridia_template::prelude::*;
+
+#[derive(Reflect, Deserialize, Debug)]
+#[reflect(InfoAny, Deserialize)]
+struct InfoA {
+    value: String,
+}
+
+impl Info for InfoA {
+    type Trait = TraitA;
+
+    fn gen(&self) -> Self::Trait {
+        TraitA {
+            value: self.value.to_owned(),
+        }
+    }
+}
+
+#[derive(Component, Reflect, Serialize, Deserialize, Debug)]
+#[reflect(Deserialize)]
+struct TraitA {
+    value: String,
+}
+
+impl Trait for TraitA {
+    type Info = InfoA;
+}
 
 #[derive(Reflect, Deserialize, Debug)]
 #[reflect(InfoAny, Deserialize)]
@@ -9,21 +36,33 @@ struct TestInfo {
 }
 
 impl Info for TestInfo {
-    type Component = TestTrait;
+    type Trait = TestTrait;
 
-    fn gen(&self) -> Self::Component {
+    fn gen(&self) -> Self::Trait {
         TestTrait { value: self.value }
     }
 }
 
-#[derive(Component, Reflect, Deserialize, Debug)]
+#[derive(Component, Reflect, Serialize, Deserialize, Debug)]
 #[reflect(Deserialize)]
 struct TestTrait {
     value: i32,
 }
 
-impl InfoComponent for TestTrait {
+impl Trait for TestTrait {
     type Info = TestInfo;
+}
+
+#[derive(Bundle, Reflect, Deserialize, Debug)]
+#[reflect(Deserialize)]
+struct TestBundle {
+    test: TestTrait,
+    a: TraitA,
+}
+
+#[derive(Component)]
+struct Test<'a> {
+    value: &'a TestInfo,
 }
 
 fn main() {
@@ -32,6 +71,8 @@ fn main() {
         .add_plugins(TemplatePlugin)
         .register_type::<TestInfo>()
         .register_type::<TestTrait>()
+        .register_type::<InfoA>()
+        .register_type::<TraitA>()
         .add_systems(Startup, spawn)
         .add_systems(Update, (check, listener))
         .run();
@@ -49,13 +90,9 @@ fn spawn(mut commands: Commands) {
     info!("{:?}", e.id());
 }
 
-fn check(
-    query: Query<(Entity, &TestTrait, &Handle<Template>), Added<TestTrait>>,
-    templates: Res<Assets<Template>>,
-) {
-    for (entity, test_trait, handle) in query.iter() {
-        info!("entity[{entity:?}] {test_trait:?}");
-        let infos = &templates.get(handle).unwrap().infos;
+fn check(query: Query<(Entity, &TestTrait, &TraitA, &Infos), Changed<Infos>>) {
+    for (entity, test_trait, trait_a, infos) in query.iter() {
+        info!("entity[{entity:?}] {test_trait:?}  {trait_a:?}");
         info!("{:?}", infos);
         info!("{:?}", infos.get::<TestInfo>());
     }

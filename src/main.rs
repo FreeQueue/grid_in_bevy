@@ -11,7 +11,7 @@ fn main() {
     //         primary_window: Some(Window {
     //             present_mode: PresentMode::AutoNoVsync,
     //             resolution: WindowResolution::new(1920., 1080.),
-    //             title: "SimpleWorld".into(),
+    //             title: "gridia".into(),
     //             ..default()
     //         }),
     //         ..default()

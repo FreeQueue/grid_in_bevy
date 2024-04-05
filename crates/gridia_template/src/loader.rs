@@ -1,5 +1,5 @@
-use bevy::asset::io::Reader;
 use bevy::asset::{AssetLoader, AsyncReadExt, BoxedFuture, LoadContext};
+use bevy::asset::io::Reader;
 use bevy::prelude::{AppTypeRegistry, FromWorld, World};
 use bevy::reflect::TypeRegistryArc;
 use bevy::utils::TypeIdMap;
@@ -62,13 +62,13 @@ impl AssetLoader for TemplateLoader {
                 for component in template.components.iter() {
                     let _ = components.try_insert(component.type_id(), component.clone());
                 }
-                for (type_id, info) in template.infos.infos.iter() {
+                for (type_id, info) in template.infos.iter() {
                     let _ = infos.try_insert(*type_id, info.clone());
                 }
             }
 
             Ok(Template {
-                infos: Infos { infos },
+                infos: Infos::new(infos),
                 components: TemplateComponents::Uninit { components },
             })
         })

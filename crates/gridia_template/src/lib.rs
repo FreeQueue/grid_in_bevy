@@ -1,6 +1,6 @@
-use crate::loader::TemplateLoader;
 use bevy::prelude::*;
 
+use crate::loader::TemplateLoader;
 use crate::prelude::*;
 use crate::template_spawner::{insert_template_system, TemplateSpawner};
 
@@ -16,7 +16,7 @@ mod template_spawner;
 #[allow(unused_imports)]
 pub mod prelude {
     pub use crate::command::{InsertTemplateCommandExt, SpawnTemplateCommandExt};
-    pub use crate::info::{Info, InfoAny, InfoComponent, Infos, ReflectInfoAny};
+    pub use crate::info::{Info, InfoAny, Infos, ReflectInfoAny, Trait};
     pub use crate::template::Template;
     pub use crate::TemplatePlugin;
 }

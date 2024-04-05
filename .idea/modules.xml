@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SimpleWorld.iml" filepath="$PROJECT_DIR$/.idea/SimpleWorld.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/gridia.iml" filepath="$PROJECT_DIR$/.idea/gridia.iml" />
     </modules>
   </component>
 </project>

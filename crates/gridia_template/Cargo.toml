@@ -1,0 +1,32 @@
+[package]
+name = "gridia_template"
+version = "0.1.0"
+edition = "2021"
+publish = ["rsproxy-sparse"]
+
+[dependencies]
+bevy = { path = "../../bevy", features = ["dynamic_linking"] }
+thiserror = "1"
+serde = "1"
+ron = { version = "0.8.1", features = ["indexmap"] }
+either = "1.10.0"
+
+# Enable a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3
+
+# further improve performances in a noticeable way, even for a release build (though the build itself will take longer to complete):
+[profile.release]
+codegen-units = 1
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+
+[[example]]
+name = "macro"
+path = "examples/macro.rs"

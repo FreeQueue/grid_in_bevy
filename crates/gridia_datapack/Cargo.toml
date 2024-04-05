@@ -1,0 +1,8 @@
+[package]
+name = "gridia_datapack"
+version = "0.1.0"
+edition = "2021"
+publish = ["rsproxy-sparse"]
+
+[dependencies]
+typed-arena = "2.0.2"

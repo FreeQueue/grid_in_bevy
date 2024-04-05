@@ -1,0 +1,7 @@
+(
+    // dep:["test.temp.ron"],
+    content:{
+        "basic::TraitA":(value:"Trait"),
+        "basic::InfoA":(value:"Info"),
+    }
+)

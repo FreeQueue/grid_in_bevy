@@ -2,8 +2,8 @@ use std::fmt::Formatter;
 use std::sync::Arc;
 
 use bevy::prelude::Reflect;
-use bevy::reflect::serde::{TypeRegistrationDeserializer, TypedReflectDeserializer};
 use bevy::reflect::{TypeRegistry, TypeRegistryArc};
+use bevy::reflect::serde::{TypedReflectDeserializer, TypeRegistrationDeserializer};
 use bevy::utils::TypeIdMap;
 use serde::de::{DeserializeSeed, MapAccess, Visitor};
 use serde::Deserializer;
@@ -30,8 +30,8 @@ impl TemplateContent {
             if components.contains_key(&type_id) {
                 continue;
             }
-            if let Some(reflect) = type_registry.get_type_data::<ReflectInfoAny>(type_id) {
-                let info = reflect.get_boxed(item).unwrap();
+            if let Some(reflect_info) = type_registry.get_type_data::<ReflectInfoAny>(type_id) {
+                let info = reflect_info.get_boxed(item).unwrap();
                 let component = info.gen_reflect();
                 if components
                     .try_insert(component.type_id(), component.into())
@@ -42,6 +42,9 @@ impl TemplateContent {
             } else {
                 components.insert(type_id, item.into());
             };
+            // else if let Some(reflect_bundle)=type_registry.get_type_data::<ReflectBundle>(type_id) {
+            //     let bundle=reflect_bundle.
+            // }
         }
     }
 }

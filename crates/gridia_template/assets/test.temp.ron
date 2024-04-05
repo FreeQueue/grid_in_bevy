@@ -1,5 +1,5 @@
 (
-    // dep:["base.RON"],
+    dep:["base.temp.ron"],
     content:{
         "basic::TestTrait":(value:5),
         "basic::TestInfo":(value:1),

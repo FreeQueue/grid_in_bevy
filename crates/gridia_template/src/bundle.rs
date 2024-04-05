@@ -1,7 +1,10 @@
+// use bevy::ecs::bundle::DynamicBundle;
+// use bevy::prelude::*;
+//
 // pub trait MyBundle: Bundle {
 //     fn get_components(&self);
 // }
-
+//
 // pub struct TemplateBundle<'a> {
 //     components: Vec<(StorageType, &'a dyn Reflect)>,
 // }
